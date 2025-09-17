@@ -1,0 +1,42 @@
+steps:
+  # Docker Build
+  - name: "gcr.io/cloud-builders/docker"
+    dir: "portfolio"
+    args:
+      [
+        "build",
+        "-t",
+        "northamerica-northeast2-docker.pkg.dev/portfolio-site-472419/portfolio-repo/portfolio-image:$COMMIT_SHA",
+        ".",
+      ]
+
+    id: Build Container Image
+  # Docker Push
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "northamerica-northeast2-docker.pkg.dev/portfolio-site-472419/portfolio-repo/portfolio-image:$COMMIT_SHA",
+      ]
+    id: Push Container Image to Artifact Repo
+  # Entrypoint, timeout and environment variables
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    timeout: 240s
+    args:
+      - run
+      - deploy
+      - portfolio-service
+      - "--image"
+      - "northamerica-northeast2-docker.pkg.dev/portfolio-site-472419/portfolio-repo/portfolio-image:$COMMIT_SHA"
+      - "--region"
+      - northamerica-northeast2
+      - "--platform"
+      - managed
+      - "--timeout"
+      - "300"
+    id: Deploy Container on Google Cloud Run
+images:
+  - "northamerica-northeast2-docker.pkg.dev/portfolio-site-472419/portfolio-repo/portfolio-image:$COMMIT_SHA"
+options:
+  logging: CLOUD_LOGGING_ONLY
