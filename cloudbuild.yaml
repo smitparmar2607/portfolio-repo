@@ -1,7 +1,6 @@
 steps:
   # Docker Build
   - name: "gcr.io/cloud-builders/docker"
-    dir: "PORTFOLIO-SITE-MAIN"
     args:
       [
         "build",
